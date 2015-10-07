@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "test": "true",
-    "start": "node server.js"
+    "start": "node server.js",
+    "deploy-remote": "git remote add dokku dokku@valueflo.ws:valueflo.ws",
+    "deploy-push": "git push dokku master",
+    "deploy": "npm run deploy-remote; npm run deploy-push"
   },
   "repository": {
     "type": "git",
