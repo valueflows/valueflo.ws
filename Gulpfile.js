@@ -47,6 +47,11 @@ function css () {
     .pipe(gulp.dest('./.build/css'))
 }
 
+function server () {
+  gulp.src(['./server.js', './package.json'])
+    .pipe(gulp.dest('./.build'))
+}
+
 function assets () {
   gulp.src('./assets/**/*')
     .pipe(gulp.dest('./.build'))
@@ -56,5 +61,6 @@ gulp.task('docs', docs)
 gulp.task('ns', ns)
 gulp.task('css', css)
 gulp.task('assets', assets)
+gulp.task('server', server)
  
-gulp.task('build', ['docs', 'ns', 'css', 'assets'])
+gulp.task('build', ['docs', 'ns', 'css', 'assets', 'server'])
