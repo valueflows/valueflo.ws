@@ -2,11 +2,13 @@ var gulp = require('gulp')
 var Swig = require('swig').Swig
 var data = require('gulp-data')
 var markdown = require('markdown-it')()
+var through = require('through2')
 var map = require('through2-map')
 var buffer = require('vinyl-buffer')
 var replaceExt = require('replace-ext')
 var assign = require('object-assign')
 var prettify = require('gulp-prettify')
+var push = Array.prototype.push
 
 function docs () {
   var swig = new Swig()
@@ -38,8 +40,29 @@ function docs () {
 }
 
 function ns () {
+
   gulp.src('./ns/*.jsonld')
+    // bundle into a single context at index.jsonld
+    .pipe(bundleContext())
     .pipe(gulp.dest('./.build/ns'))
+
+  function bundleContext () {
+    var bundle = {
+      '@context': {},
+      '@graph': []
+    }
+
+    return through.obj(function bundleContext (file, enc, cb) {
+      console.log("contents", String(file.contents))
+      var context = JSON.parse(file.contents)
+      assign(bundle['@context'], context['@context'])
+      push.apply(bundle['@graph'], context['@graph'])
+      cb()
+    }, function writeContext (cb) {
+      console.log("context", bundle)
+      cb()
+    })
+  }
 }
 
 function css () {
