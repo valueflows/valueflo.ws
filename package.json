@@ -35,6 +35,7 @@
     "replace-ext": "0.0.1",
     "swig": "^1.4.2",
     "through2-map": "^2.0.0",
+    "vinyl": "^1.0.0",
     "vinyl-buffer": "^1.0.0"
   }
 }

@@ -1,4 +1,5 @@
 var gulp = require('gulp')
+var File = require('vinyl')
 var Swig = require('swig').Swig
 var data = require('gulp-data')
 var markdown = require('markdown-it')()
@@ -7,6 +8,7 @@ var map = require('through2-map')
 var buffer = require('vinyl-buffer')
 var replaceExt = require('replace-ext')
 var assign = require('object-assign')
+var Path = require('path')
 var prettify = require('gulp-prettify')
 var push = Array.prototype.push
 
@@ -51,17 +53,46 @@ function ns () {
       '@context': {},
       '@graph': []
     }
+    var base = null
 
     return through.obj(function bundleContext (file, enc, cb) {
-      console.log("contents", String(file.contents))
-      var context = JSON.parse(file.contents)
-      assign(bundle['@context'], context['@context'])
-      push.apply(bundle['@graph'], context['@graph'])
-      cb()
+      //console.log("spying", file)
+      if (!base) {
+        base = file.base
+      }
+      var input = JSON.parse(file.contents)
+      if (Array.isArray(input['@context'])) {
+        input['@context'].forEach(function (item) {
+          mix(bundle['@context'], item)
+        })
+      } else {
+        mix(bundle['@context'], input['@context'])
+      }
+      push.apply(bundle['@graph'], input['@graph'])
+      cb(null, file)
     }, function writeContext (cb) {
-      console.log("context", bundle)
-      cb()
+      var path = Path.join(base, 'index.jsonld')
+      var contents = new Buffer(JSON.stringify(bundle, null, 2))
+      //console.log("writing", path, contents)
+      this.push(new File({
+        path: path,
+        base: base,
+        cwd: process.cwd(),
+        contents: contents
+      }))
+      cb(null)
     })
+
+    function mix (bundle, input) {
+      switch (typeof input) {
+        case 'string':
+          // TODO fetch from url and re-mix
+          break
+        case 'object':
+          assign(bundle, input)
+          break
+      }
+    }
   }
 }
 
